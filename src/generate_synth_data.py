@@ -1,8 +1,10 @@
+#encoding: utf8
+
 import os
+import scipy
 import argparse
 import numpy as np
 from skimage import filters
-import scipy
 
 OUT_DIRECTORY = os.path.join('..', 'dataset')
 OUT_DATA_DIR = 'data'
