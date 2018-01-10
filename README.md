@@ -62,7 +62,7 @@ As such, the investigators within the ADNI
 contributed to the design and implementation of ADNI and/or provided data but 
 did not participate in analysis or writing of this
 report. A complete listing of ADNI investigators can be found at:
-[http://adni.loni.usc.edu/wp-content/uploads/how_to_apply/ADNI_Acknowledgement_List.pdf)](http://adni.loni.usc.edu/wp-content/uploads/how_to_apply/ADNI_Acknowledgement_List.pdf )"
+[http://adni.loni.usc.edu/wp-content/uploads/how_to_apply/ADNI_Acknowledgement_List.pdf](http://adni.loni.usc.edu/wp-content/uploads/how_to_apply/ADNI_Acknowledgement_List.pdf)"
 
 
 ## Usage
