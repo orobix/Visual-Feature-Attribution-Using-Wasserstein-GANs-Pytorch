@@ -37,8 +37,7 @@ outcome."
 ### ADNI Dataset
 
 >"We selected 5778 3D T1-weighted MR images from
-1288 subjects with either an MCI (label 0) or AD (label
-1) diagnosis from the ADNI cohort. 2839 of the images
+1288 subjects with either an MCI (label 0) or AD (label 1) diagnosis from the ADNI cohort. 2839 of the images
 were acquired using a 1.5T magnet, the remainder using a
 3T magnet. The subjects are scanned at regular intervals as
 part of the ADNI study and a number of subjects converted
@@ -63,9 +62,7 @@ As such, the investigators within the ADNI
 contributed to the design and implementation of ADNI and/or provided data but 
 did not participate in analysis or writing of this
 report. A complete listing of ADNI investigators can be found at:
-[http://adni.loni.usc.edu/wp-content/uploads/how_
-to_apply/ADNI_Acknowledgement_List.pdf)](http://adni.loni.usc.edu/wp-content/uploads/how_
-to_apply/ADNI_Acknowledgement_List.pdf)"
+[http://adni.loni.usc.edu/wp-content/uploads/how_to_apply/ADNI_Acknowledgement_List.pdf)](http://adni.loni.usc.edu/wp-content/uploads/how_to_apply/ADNI_Acknowledgement_List.pdf )"
 
 
 ## Usage
