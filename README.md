@@ -111,6 +111,15 @@ Running the command without arguments will generate a total of 20k 1x112x112 png
 
 ## Results
 
+## Useful repositories
+
+ - [ganhacks](https://github.com/soumith/ganhacks): Starter from "How to Train a GAN?" at NIPS2016
+
+ - [WassersteinGAN](https://github.com/martinarjovsky/WassersteinGAN): Code accompanying the paper "Wasserstein GAN"
+
+ - [wgan-gp](https://github.com/caogang/wgan-gp): Pytorch implementation of Paper "Improved Training of Wasserstein GANs".
+
+
 ## .bib citation
 cite the paper as follow (copied-pasted it from arxiv for you):
 
