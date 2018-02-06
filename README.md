@@ -10,8 +10,7 @@ This repository contains the code to reproduce results for the paper cited above
 
 Here is an example of what the generator/mapper network should produce (one frame every 50 iterations, left: input, right: disease map for sinthetic data at iteration 50 * (its + 1))
 
-[![disease mpas examples (click to play)](doc/imgs/fake_samples_03100.png)](https://i.imgur.com/TGreChH.gifv)
-
+<a href="https://i.imgur.com/TGreChH.gifv" target="_blank" alt='disease mpas examples (click to play)'>![disease mpas examples (click to play)](doc/imgs/fake_samples_03100.png)</a>
 
 ### Synthetic Dataset
 
