@@ -4,82 +4,72 @@ import argparse
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataroot',
+    parser.add_argument('-root', '--dataset_root',
                         help='path to dataset',
                         default='../dataset')
 
-    parser.add_argument('--batch_size',
-                        type=int,
-                        default=32,
-                        help='input batch size')
+    parser.add_argument('-exp', '--experiment',
+                        type=str,
+                        help='directory in where samples and models will be saved',
+                        default='../samples')
 
-    parser.add_argument('--image_size',
+    parser.add_argument('-bs', '--batch_size',
                         type=int,
-                        default=128,
-                        help='the height / width of the input image to network')
+                        help='input batch size',
+                        default=32)
 
-    parser.add_argument('--nc',
+    parser.add_argument('isize', '--image_size',
                         type=int,
-                        default=1,
-                        help='input image channels')
+                        help='the height / width of the input image to network',
+                        default=128)
 
-    parser.add_argument('--nz',
+    parser.add_argument('-nc', '--channels_number',
                         type=int,
-                        default=1,
-                        help='size of the latent z vector')
+                        help='input image channels',
+                        default=1)
 
-    parser.add_argument('--ngf',
+    parser.add_argument('-ngf', '--num_filters_g',
                         type=int,
+                        help='number of filters for the first layer of the generator',
                         default=16)
 
-    parser.add_argument('--ndf',
+    parser.add_argument('-ndf', '--num_filters_d',
                         type=int,
+                        help='number of filters for the first layer of the discriminator',
                         default=16)
 
-    parser.add_argument('--niter',
+    parser.add_argument('-nep', '--nepochs',
                         type=int,
-                        default=10000,
-                        help='number of epochs to train for')
+                        help='number of epochs to train for',
+                        default=1000)
 
-    parser.add_argument('-lrD', '--learning_rate_d',
-                        type=float,
-                        default=1e-5,
-                        help='learning rate for Critic, default=1e-5')
+    parser.add_argument('-dit', '--d_iters',
+                        type=int,
+                        help='number of discriminator iterations per each generator iter, default=5',
+                        default=5)
 
     parser.add_argument('-lrG', '--learning_rate_g',
                         type=float,
-                        default=1e-5,
-                        help='learning rate for Generator, default=1e-5')
+                        help='learning rate for generator, default=1e-5',
+                        default=1e-5)
 
-    parser.add_argument('--beta1',
+    parser.add_argument('-lrD', '--learning_rate_d',
                         type=float,
-                        default=0.0,
-                        help='beta1 for adam. default=0.5')
+                        help='learning rate for discriminator, default=1e-5',
+                        default=1e-5)
+
+    parser.add_argument('-b1', '--beta1',
+                        type=float,
+                        help='beta1 for adam. default=0.0',
+                        default=0.0)
+
+    parser.add_argument('-seed', '--manual_seed',
+                        type=int,
+                        help='input for the manual seeds initializations',
+                        default=7)
 
     parser.add_argument('--cuda',
                         action='store_true',
                         help='enables cuda')
-
-    parser.add_argument('--net_g',
-                        default='',
-                        help="path to net_g (to continue training)")
-
-    parser.add_argument('--net_d',
-                        default='',
-                        help="path to net_d (to continue training)")
-
-    parser.add_argument('--Diters',
-                        type=int,
-                        default=5,
-                        help='number of D iters per each G iter, default=5')
-
-    parser.add_argument('--experiment',
-                        default='../samples',
-                        help='Where to store samples and models')
-
-    parser.add_argument('-seed', '--manual_seed',
-                        type=int,
-                        default=7,
-                        help='input for the manual seeds initializations')
 
     return parser

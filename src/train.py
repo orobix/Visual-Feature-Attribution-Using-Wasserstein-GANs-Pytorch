@@ -61,7 +61,7 @@ def weights_init(m):
 
 def init_model(opt):
     net_g = UNet(nf=opt.ngf)
-    net_d = DCGAN_D(opt.image_size, opt.nz, opt.nc,
+    net_d = DCGAN_D(opt.image_size, opt.nc,
                     opt.ndf)
     return net_g, net_d
 
@@ -83,7 +83,7 @@ def init_dataset(opt):
     Initialize both datasets and dataloaders
     '''
     dataset = SynthDataset(disease=False,
-                           root_dir=opt.dataroot,
+                           root_dir=opt.dataset_root,
                            image_size=opt.image_size,
                            transform=transforms.Compose([
                                transforms.ToTensor(),

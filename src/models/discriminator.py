@@ -1,12 +1,11 @@
 import torch
 import torch.nn as nn
 import torch.nn.parallel
-import torch.nn.functional as F
 
 
 class DCGAN_D(nn.Module):
 
-    def __init__(self, isize, nz, nc, ndf, ngpu=1, n_extra_layers=0):
+    def __init__(self, isize, nc, ndf, ngpu=1, n_extra_layers=0):
         super(DCGAN_D, self).__init__()
         self.ngpu = ngpu
         self.isize = isize
