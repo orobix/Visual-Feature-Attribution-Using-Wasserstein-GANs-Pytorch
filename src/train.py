@@ -1,9 +1,9 @@
 from __future__ import print_function
 import os
 import shutil
-import random
 
 import torch
+import numpy as np
 import torch.optim as optim
 import torchvision.utils as vutils
 import torch.backends.cudnn as cudnn
@@ -11,22 +11,15 @@ import torchvision.transforms as transforms
 
 from torch.autograd import Variable
 
+from parser import get_parser
+
+from synth_dataset import SynthDataset
+
 from models.generator import UNet
 from models.discriminator import DCGAN_D
-from synth_dataset import SynthDataset
-from parser import get_parser
-import numpy as np
-from torch import nn
 
-
-val_crit = nn.BCELoss()
-val_crit_d = nn.CrossEntropyLoss()
-
-torch.cuda.manual_seed(7)
 
 LAMBDA_NORM = 1.5e-4
-
-MU_ORIG = 372.758283
 
 
 def init_seed(opt):
@@ -34,7 +27,6 @@ def init_seed(opt):
     Disable cudnn to maximize reproducibility
     '''
     torch.cuda.cudnn_enabled = False
-    random.seed(opt.manual_seed)
     torch.manual_seed(opt.manual_seed)
     torch.cuda.manual_seed(opt.manual_seed)
     cudnn.benchmark = True
@@ -89,7 +81,7 @@ def init_dataset(opt):
     '''
     Initialize both datasets and dataloaders
     '''
-    dataset = SynthDataset(disease=False,
+    dataset = SynthDataset(anomaly=False,
                            root_dir=opt.dataset_root,
                            image_size=opt.image_size,
                            transform=transforms.Compose([
@@ -98,7 +90,7 @@ def init_dataset(opt):
                                    (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                            ]))
 
-    disease_dataset = SynthDataset(disease=True,
+    anomaly_dataset = SynthDataset(anomaly=True,
                                    root_dir=opt.dataroot,
                                    image_size=opt.image_size,
                                    transform=transforms.Compose([
@@ -110,19 +102,19 @@ def init_dataset(opt):
     healthy_dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size,
                                                      shuffle=True, drop_last=True)
 
-    disease_dataloader = torch.utils.data.DataLoader(disease_dataset, batch_size=opt.batch_size,
+    anomaly_dataloader = torch.utils.data.DataLoader(anomaly_dataset, batch_size=opt.batch_size,
                                                      shuffle=True, drop_last=True)
 
-    return healthy_dataloader, disease_dataloader
+    return healthy_dataloader, anomaly_dataloader
 
 
-def train(opt, healthy_dataloader, disease_dataloader, net_g, net_d, optim_g, optim_d):
+def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, optim_d):
     '''
     Run the trainig algorithm.
     '''
     model_input = torch.FloatTensor(
         opt.batch_size, 1, opt.image_size, opt.image_size)
-    fixed_model_input = iter(disease_dataloader).next()[0]
+    fixed_model_input = iter(anomaly_dataloader).next()[0]
 
     if opt.cuda:
         fixed_model_input = fixed_model_input.cuda()
@@ -141,9 +133,9 @@ def train(opt, healthy_dataloader, disease_dataloader, net_g, net_d, optim_g, op
     gen_iterations = 0
     for epoch in range(opt.niter):
         data_iter = iter(healthy_dataloader)
-        disease_data_iter = iter(disease_dataloader)
+        anomaly_data_iter = iter(anomaly_dataloader)
         i = 0
-        while i < len(disease_dataloader):
+        while i < len(anomaly_dataloader):
             ############################
             # (1) Update D network
             ###########################
@@ -160,7 +152,7 @@ def train(opt, healthy_dataloader, disease_dataloader, net_g, net_d, optim_g, op
             # occasionally switch labels
             if np.random.randint(20) == 0:
                 labels = labels[::-1]
-            while j < Diters and i < len(disease_dataloader):
+            while j < Diters and i < len(anomaly_dataloader):
                 j += 1
 
                 data = data_iter.next()
@@ -178,25 +170,25 @@ def train(opt, healthy_dataloader, disease_dataloader, net_g, net_d, optim_g, op
                 err_d_real.backward(labels[1])
 
                 # train with diseasy
-                data = disease_data_iter.next()
+                data = anomaly_data_iter.next()
 
-                disease_cpu = data[0]
+                anomaly_cpu = data[0]
                 net_d.zero_grad()
 
                 if opt.cuda:
-                    disease_cpu = disease_cpu.cuda()
-                model_input.resize_as_(disease_cpu).copy_(disease_cpu)
+                    anomaly_cpu = anomaly_cpu.cuda()
+                model_input.resize_as_(anomaly_cpu).copy_(anomaly_cpu)
                 inputv = Variable(model_input)
 
-                disease_map = Variable(net_g(inputv).data)
+                anomaly_map = Variable(net_g(inputv).data)
 
-                outputv = disease_map
+                outputv = anomaly_map
                 img_sum = inputv - outputv
 
-                err_d_disease_map = net_d(img_sum)
-                err_d_disease_map.backward(labels[0])
+                err_d_anomaly_map = net_d(img_sum)
+                err_d_anomaly_map.backward(labels[0])
 
-                err_d = err_d_real - err_d_disease_map
+                err_d = err_d_real - err_d_anomaly_map
                 optim_d.step()
 
             ############################
@@ -207,22 +199,23 @@ def train(opt, healthy_dataloader, disease_dataloader, net_g, net_d, optim_g, op
             net_g.zero_grad()
             # in case our last batch was the tail batch of the dataloader,
             # make sure we feed a full batch of noise
-            disease_map = net_g(inputv)
-            (disease_map.norm(1) * LAMBDA_NORM).backward(retain_graph=True)
-            errG = net_d(inputv - disease_map)
-            errG.backward(labels[1])
+            anomaly_map = net_g(inputv)
+            # we want to minimize the l1 norm for the anomaly map
+            (anomaly_map.norm(1) * LAMBDA_NORM).backward(retain_graph=True)
+            err_g = net_d(inputv - anomaly_map)
+            err_g.backward(labels[1])
             optim_g.step()
             gen_iterations += 1
 
             # print and save
             print('[%d/%d][%d/%d][%d] Loss_D: %f Loss_G: %f Loss_D_real: %f Loss_D_fake %f'
                   % (epoch, opt.niter, i, len(healthy_dataloader), gen_iterations,
-                     err_d.data[0], errG.data[0], err_d_real.data[0], err_d_disease_map.data[0]))
+                     err_d.data[0], err_g.data[0], err_d_real.data[0], err_d_anomaly_map.data[0]))
             if gen_iterations % 50 == 0:
-                disease_map = net_g(Variable(fixed_model_input, volatile=True))
-                disease_map.data + disease_map.data.mul(0.5).add(0.5)
+                anomaly_map = net_g(Variable(fixed_model_input, volatile=True))
+                anomaly_map.data + anomaly_map.data.mul(0.5).add(0.5)
                 vutils.save_image(
-                    disease_map.data, '{:}/fake_samples_{:05d}.png'.format(opt.experiment, gen_iterations))
+                    anomaly_map.data, '{:}/fake_samples_{:05d}.png'.format(opt.experiment, gen_iterations))
 
         # do checkpointing
         torch.save(net_g.state_dict(),
@@ -246,7 +239,7 @@ def main():
     init_experiment(options)
     init_seed(options)
 
-    healthy_dataloader, disease_dataloader = init_dataset(options)
+    healthy_dataloader, anomaly_dataloader = init_dataset(options)
 
     net_g, net_d = init_model(options)
 
@@ -260,7 +253,7 @@ def main():
         net_d = net_d.cuda()
 
     train(options,
-          healthy_dataloader, disease_dataloader,
+          healthy_dataloader, anomaly_dataloader,
           net_g=net_g, net_d=net_d,
           optim_g=optim_g, optim_d=optim_d)
 
