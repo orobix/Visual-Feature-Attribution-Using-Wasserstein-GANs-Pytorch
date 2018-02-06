@@ -10,17 +10,17 @@ class SynthDataset(Dataset):
     for more info: http://pytorch.org/docs/master/data.html
     '''
 
-    def __init__(self, image_size, root_dir='../dataset/', disease=False, transform=None):
+    def __init__(self, image_size, root_dir='../dataset/', anomaly=False, transform=None):
         super(SynthDataset, self).__init__()
         self.root_dir = root_dir
-        self.disease = disease
+        self.anomaly = anomaly
         self.transform = transform
 
         check_root = os.path.join(self.root_dir, 'data')
         self.names = [os.path.splitext(f)[0] for f in os.listdir(check_root) if os.path.isfile(os.path.join(check_root, f))]
 
-        if disease is not None:
-            self.names = [n for n in self.names if bool(int(n.split('_')[1])) == bool(disease)]
+        if anomaly is not None:
+            self.names = [n for n in self.names if bool(int(n.split('_')[1])) == bool(anomaly)]
 
         X_paths = [os.path.join(self.root_dir, 'data', n) + '.png' for n in self.names]
 

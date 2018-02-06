@@ -18,7 +18,7 @@ def get_parser():
                         help='input batch size',
                         default=32)
 
-    parser.add_argument('isize', '--image_size',
+    parser.add_argument('-isize', '--image_size',
                         type=int,
                         help='the height / width of the input image to network',
                         default=128)

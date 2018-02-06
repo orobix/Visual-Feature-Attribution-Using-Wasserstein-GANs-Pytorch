@@ -59,9 +59,8 @@ def init_model(opt):
     '''
     Initialize generator and disciminator
     '''
-    net_g = UNet(nf=opt.ngf)
-    net_d = DCGAN_D(opt.image_size, opt.nc,
-                    opt.ndf)
+    net_g = UNet(nf=opt.num_filters_g)
+    net_d = DCGAN_D(opt.image_size, opt.channels_number, opt.num_filters_d)
     return net_g, net_d
 
 
@@ -91,7 +90,7 @@ def init_dataset(opt):
                            ]))
 
     anomaly_dataset = SynthDataset(anomaly=True,
-                                   root_dir=opt.dataroot,
+                                   root_dir=opt.dataset_root,
                                    image_size=opt.image_size,
                                    transform=transforms.Compose([
                                        transforms.ToTensor(),
@@ -131,7 +130,7 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
         model_input = model_input.cuda()
 
     gen_iterations = 0
-    for epoch in range(opt.niter):
+    for epoch in range(opt.nepochs):
         data_iter = iter(healthy_dataloader)
         anomaly_data_iter = iter(anomaly_dataloader)
         i = 0
@@ -209,7 +208,7 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
 
             # print and save
             print('[%d/%d][%d/%d][%d] Loss_D: %f Loss_G: %f Loss_D_real: %f Loss_D_fake %f'
-                  % (epoch, opt.niter, i, len(healthy_dataloader), gen_iterations,
+                  % (epoch, opt.nepochs, i, len(healthy_dataloader), gen_iterations,
                      err_d.data[0], err_g.data[0], err_d_real.data[0], err_d_anomaly_map.data[0]))
             if gen_iterations % 50 == 0:
                 anomaly_map = net_g(Variable(fixed_model_input, volatile=True))
