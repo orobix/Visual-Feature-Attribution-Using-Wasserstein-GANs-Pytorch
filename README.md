@@ -103,19 +103,33 @@ To train the WGAN on this task, cd into this repo's `src` root folder and execut
 
 This script takes the following command line options:
 
-- `dataset`: the name of the dataset (`synth` or `real`)
-
 - `dataset_root`: the root directory where tha dataset is stored
 
-- `image_size`: width and heigth for the generated images
+- `experiment`: directory in where samples and models will be saved
 
-- `square_size`: width and heigth for the inner squares in the masks (anomaly size)
+- `batch_size`: input batch size
 
-- `offset`: maximum absolute offset in pixels for the off-centre inner squares in the masks (off centre anomalies max offset)
+- `image_size`: the height / width of the input image to network
 
-- `num_samples`: number of samples to generate for each label (`total samples = num_samples * 2`)
+- `channels_number`: input image channels
 
-Running the command without arguments will generate a total of 20k 1x112x112 png images (10k images in `data` and 10k masks in `masks`, masks are not needed for this prroject), with inner squares of 20x20 pixels and a maximum random offset for the offcentre squares of 5 pixels. 
+- `num_filters_g`: number of filters for the first layer of the generator
+
+- `num_filters_d`: number of filters for the first layer of the discriminator
+
+- `nepochs`: number of epochs to train for
+
+- `d_iters`: number of discriminator iterations per each generator iter, default=5
+
+- `learning_rate_g`: learning rate for generator, default=1e-5
+
+- `learning_rate_d`: learning rate for discriminator, default=1e-5
+
+- `beta1`: beta1 for adam. default=0.0
+
+- `cuda`: enables cuda (store True)
+
+- `manual_seed`: input for the manual seeds initializations
 
 ## Results
 
