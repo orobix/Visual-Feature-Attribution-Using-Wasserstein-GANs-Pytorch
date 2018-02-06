@@ -22,11 +22,11 @@ class SynthDataset(Dataset):
         if anomaly is not None:
             self.names = [n for n in self.names if bool(int(n.split('_')[1])) == bool(anomaly)]
 
-        X_paths = [os.path.join(self.root_dir, 'data', n) + '.png' for n in self.names]
+        x_paths = [os.path.join(self.root_dir, 'data', n) + '.png' for n in self.names]
 
-        self.X = np.zeros((len(X_paths), image_size, image_size, 1))
-        for i in range(len(X_paths)):
-            self.X[i] = self.load_sample(X_paths[i])
+        self.X = np.zeros((len(x_paths), image_size, image_size, 1))
+        for i in range(len(x_paths)):
+            self.X[i] = self.load_sample(x_paths[i])
 
         self.labels = np.asarray([int(n.split('_')[1]) for n in self.names])
         self.subtypes = np.asarray([int(n.split('_')[2]) for n in self.names])
