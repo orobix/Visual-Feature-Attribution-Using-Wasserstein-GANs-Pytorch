@@ -42,6 +42,8 @@ outcome."
 
 ### ADNI Dataset
 
+Currently we only implemented training on synthetic dataset, we will work on implement training on ADNI dataset asap (but pull requests are welcome as always), we put below ADNI dataset details for sake of completeness.
+
 >"We selected 5778 3D T1-weighted MR images from
 1288 subjects with either an MCI (label 0) or AD (label 1) diagnosis from the ADNI cohort. 2839 of the images
 were acquired using a 1.5T magnet, the remainder using a
