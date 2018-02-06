@@ -143,6 +143,9 @@ Running the command without arguments will train the models with the default hyp
 
  - [c3d-pytorch](https://github.com/DavideA/c3d-pytorch/blob/master/C3D_model.py): Model used as discriminator in the reference paper
 
+## Models
+
+Instead of using the models described in the paper we used an [UNet](https://github.com/milesial/Pytorch-UNet) as Generator and a [DCGAN_D](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py) as discriminator.
 
 ## .bib citation
 cite the paper as follow (copied-pasted it from arxiv for you):
