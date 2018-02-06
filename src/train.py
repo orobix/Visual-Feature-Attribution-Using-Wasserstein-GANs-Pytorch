@@ -141,23 +141,23 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
             for p in net_d.parameters():  # reset requires_grad
                 p.requires_grad = True  # they are set to False below in net_g update
 
-            # train the discriminator Diters times
+            # train the discriminator d_iters times
             if gen_iterations < 25 or gen_iterations % 500 == 0:
-                Diters = 100
+                d_iters = 100
             else:
-                Diters = opt.Diters
+                d_iters = opt.d_iters
             j = 0
             labels = [mone, one]
             # occasionally switch labels
             if np.random.randint(20) == 0:
                 labels = labels[::-1]
-            while j < Diters and i < len(anomaly_dataloader):
+            while j < d_iters and i < len(anomaly_dataloader):
                 j += 1
 
                 data = data_iter.next()
                 i += 1
 
-                # train with healthy
+                # train with real / healthy data
                 real_cpu = data[0]
                 net_d.zero_grad()
 
@@ -168,7 +168,7 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                 err_d_real = net_d(inputv)
                 err_d_real.backward(labels[1])
 
-                # train with diseasy
+                # train with difference (anomalous - anomaly map)
                 data = anomaly_data_iter.next()
 
                 anomaly_cpu = data[0]
@@ -207,7 +207,7 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
             gen_iterations += 1
 
             # print and save
-            print('[%d/%d][%d/%d][%d] Loss_D: %f Loss_G: %f Loss_D_real: %f Loss_D_fake %f'
+            print('[%d/%d][%d/%d][%d] Loss_D: %f Loss_G: %f Loss_D_real: %f Loss_D_diff %f'
                   % (epoch, opt.nepochs, i, len(healthy_dataloader), gen_iterations,
                      err_d.data[0], err_g.data[0], err_d_real.data[0], err_d_anomaly_map.data[0]))
             if gen_iterations % 50 == 0:
