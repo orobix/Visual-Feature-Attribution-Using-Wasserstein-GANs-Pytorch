@@ -103,21 +103,21 @@ To train the WGAN on this task, cd into this repo's `src` root folder and execut
 
 This script takes the following command line options:
 
-- `dataset_root`: the root directory where tha dataset is stored
+- `dataset_root`: the root directory where tha dataset is stored, default='../dataset'
 
-- `experiment`: directory in where samples and models will be saved
+- `experiment`: directory in where samples and models will be saved, default='../samples'
 
-- `batch_size`: input batch size
+- `batch_size`: input batch size, default=32
 
-- `image_size`: the height / width of the input image to network
+- `image_size`: the height / width of the input image to network, default=128
 
-- `channels_number`: input image channels
+- `channels_number`: input image channels, default=1
 
-- `num_filters_g`: number of filters for the first layer of the generator
+- `num_filters_g`: number of filters for the first layer of the generator, default=16
 
-- `num_filters_d`: number of filters for the first layer of the discriminator
+- `num_filters_d`: number of filters for the first layer of the discriminator, default=16
 
-- `nepochs`: number of epochs to train for
+- `nepochs`: number of epochs to train for, default=1000
 
 - `d_iters`: number of discriminator iterations per each generator iter, default=5
 
@@ -129,9 +129,9 @@ This script takes the following command line options:
 
 - `cuda`: enables cuda (store True)
 
-- `manual_seed`: input for the manual seeds initializations
+- `manual_seed`: input for the manual seeds initializations, default=7
 
-## Results
+Running the command without arguments will train the models with the default hyperparamters values (producing results shown above).
 
 ## Useful repositories and code
 
