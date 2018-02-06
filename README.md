@@ -103,29 +103,29 @@ To train the WGAN on this task, cd into this repo's `src` root folder and execut
 
 This script takes the following command line options:
 
-- `dataset_root`: the root directory where tha dataset is stored, default='../dataset'
+- `dataset_root`: the root directory where tha dataset is stored, default to `'../dataset'`
 
-- `experiment`: directory in where samples and models will be saved, default='../samples'
+- `experiment`: directory in where samples and models will be saved, default to `'../samples'`
 
-- `batch_size`: input batch size, default=32
+- `batch_size`: input batch size, default to `32`
 
-- `image_size`: the height / width of the input image to network, default=128
+- `image_size`: the height / width of the input image to network, default to `128`
 
-- `channels_number`: input image channels, default=1
+- `channels_number`: input image channels, default to `1`
 
-- `num_filters_g`: number of filters for the first layer of the generator, default=16
+- `num_filters_g`: number of filters for the first layer of the generator, default to `16`
 
-- `num_filters_d`: number of filters for the first layer of the discriminator, default=16
+- `num_filters_d`: number of filters for the first layer of the discriminator, default to `16`
 
-- `nepochs`: number of epochs to train for, default=1000
+- `nepochs`: number of epochs to train for, default to `1000`
 
-- `d_iters`: number of discriminator iterations per each generator iter, default=5
+- `d_iters`: number of discriminator iterations per each generator iter, default to `5`
 
-- `learning_rate_g`: learning rate for generator, default=1e-5
+- `learning_rate_g`: learning rate for generator, default to `1e-5`
 
-- `learning_rate_d`: learning rate for discriminator, default=1e-5
+- `learning_rate_d`: learning rate for discriminator, default to `1e-5`
 
-- `beta1`: beta1 for adam. default=0.0
+- `beta1`: beta1 for adam. default to `0.0`
 
 - `cuda`: enables cuda (store True)
 
