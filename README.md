@@ -178,4 +178,4 @@ cite the paper as follow (copied-pasted it from arxiv for you):
 
 This project is licensed under the MIT License
 
-Copyright (c) 2016 Daniele Cortinovis, Orobix Srl (www.orobix.com).
+Copyright (c) 2018 Daniele E. Ciriello, Orobix Srl (www.orobix.com).
