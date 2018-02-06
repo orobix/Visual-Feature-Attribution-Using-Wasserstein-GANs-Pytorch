@@ -1,105 +1,111 @@
-# encoding: utf8
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
-class Generator(nn.Module):
-    """docstring for Generator"""
+class UNet(nn.Module):
+    def __init__(self, n_channels=1, n_classes=1, nf=16):
+        super(UNet, self).__init__()
+        self.nf = nf
+        self.inc = inconv(n_channels, self.nf)
 
-    def __init__(self, nc=1, ndf=16):
-        super(Generator, self).__init__()
-        # encoder
-        self.c1a = nn.Conv2d(nc, ndf, 3, 1, 1, bias=False)
-        self.bn1a = nn.BatchNorm2d(ndf)
-        self.c1b = nn.Conv2d(ndf, ndf, 3, 1, 1, bias=False)
-        self.bn1b = nn.BatchNorm2d(ndf)
-        self.pool1 = nn.AvgPool2d(2, 2)
+        self.down1 = down(self.nf, 2*self.nf)
+        self.down2 = down(2*self.nf, 4*self.nf)
+        self.down3 = down(4*self.nf, 8*self.nf)
+        self.down4 = down(8*self.nf, 8*self.nf)
 
-        self.c2a = nn.Conv2d(ndf, 2*ndf, 3, 1, 1, bias=False)
-        self.bn2a = nn.BatchNorm2d(2*ndf)
-        self.c2b = nn.Conv2d(2*ndf, 2*ndf, 3, 1, 1, bias=False)
-        self.bn2b = nn.BatchNorm2d(2*ndf)
-        self.pool2 = nn.AvgPool2d(2, 2)
-
-        self.c3a = nn.Conv2d(2*ndf, 4*ndf, 3, 1, 2, bias=False)
-        self.bn3a = nn.BatchNorm2d(4*ndf)
-        self.c3b = nn.Conv2d(4*ndf, 4*ndf, 3, 1, 2, bias=False)
-        self.bn3b = nn.BatchNorm2d(4*ndf)
-        self.pool3 = nn.AvgPool2d(2, 2)
-
-        # bottleneck
-        self.c4a = nn.Conv2d(4*ndf, 8*ndf, 3, 1, 1, bias=False)
-        self.bn4a = nn.BatchNorm2d(8*ndf)
-        self.c4b = nn.Conv2d(8*ndf, 8*ndf, 3, 1, 1, bias=False)
-        self.bn4b = nn.BatchNorm2d(8*ndf)
-
-        # decoder
-        self.uc3 = nn.ConvTranspose2d(8*ndf, 4*ndf, 4, 2, 0, bias=False)
-        self.ubn3 = nn.BatchNorm2d(4*ndf)
-        self.c5a = nn.Conv2d(8*ndf, 4*ndf, 3, 1, 0, bias=False)
-        self.bn5a = nn.BatchNorm2d(4*ndf)
-        self.c5b = nn.Conv2d(4*ndf, 4*ndf, 3, 1, 0, bias=False)
-        self.bn5b = nn.BatchNorm2d(4*ndf)
-
-        self.uc2 = nn.ConvTranspose2d(4*ndf, 2*ndf, 4, 2, 0, bias=False)
-        self.ubn2 = nn.BatchNorm2d(2*ndf)
-        self.c6a = nn.Conv2d(4*ndf, 2*ndf, 3, 1, 1, bias=False)
-        self.bn6a = nn.BatchNorm2d(2*ndf)
-        self.c6b = nn.Conv2d(2*ndf, 2*ndf, 3, 1, 1, bias=False)
-        self.bn6b = nn.BatchNorm2d(2*ndf)
-
-        self.uc1 = nn.ConvTranspose2d(2*ndf, ndf, 4, 2, 0, bias=False)
-        self.ubn1 = nn.BatchNorm2d(ndf)
-        self.c8a = nn.Conv2d(2*ndf, ndf, 3, 1, 1, bias=False)
-        self.bn8a = nn.BatchNorm2d(ndf)
-        self.c8b = nn.Conv2d(ndf, 1, 3, 1, 1, bias=False)
+        self.up4 = up(16*self.nf, 4*self.nf)
+        self.up3 = up(8*self.nf, 2*self.nf)
+        self.up2 = up(4*self.nf, self.nf)
+        self.up1 = up(2*self.nf, self.nf)
+        self.outc = outconv(self.nf, n_classes)
 
     def forward(self, x):
-        x1a = F.leaky_relu(self.bn1a(self.c1a(x)),
-                           negative_slope=0.2, inplace=True)
-        x1b = F.leaky_relu(self.bn1b(self.c1b(x1a)),
-                           negative_slope=0.2, inplace=True)
-        x1 = self.pool1(x1b)  # 16, 56, 56
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+        x5 = self.down4(x4)
 
-        x2a = F.leaky_relu(self.bn2a(self.c2a(x1)),
-                           negative_slope=0.2, inplace=True)
-        x2b = F.leaky_relu(self.bn2b(self.c2b(x2a)),
-                           negative_slope=0.2, inplace=True)
-        x2 = self.pool2(x2b)  # 32, 28, 28
+        xu4 = self.up4(x5, x4)
+        xu3 = self.up3(xu4, x3)
+        xu2 = self.up2(xu3, x2)
+        xu1 = self.up1(xu2, x1)
+        xo = self.outc(xu1)
 
-        x3a = F.leaky_relu(self.bn3a(self.c3a(x2)),
-                           negative_slope=0.2, inplace=True)
-        x3b = F.leaky_relu(self.bn3b(self.c3b(x3a)),
-                           negative_slope=0.2, inplace=True)
-        x3 = self.pool3(x3b)  # 32, 16, 16
+        return F.tanh(xo)
 
-        x4a = F.leaky_relu(self.bn4a(self.c4a(x3)),
-                           negative_slope=0.2, inplace=True)
-        x4b = F.leaky_relu(self.bn4b(self.c4b(x4a)),
-                           negative_slope=0.2, inplace=True)  # 128, 16, 16
 
-        xu3 = F.leaky_relu(self.ubn3(self.uc3(x4b)),
-                           negative_slope=0.2, inplace=True)
+class double_conv(nn.Module):
+    '''(conv => BN => ReLU) * 2'''
+    def __init__(self, in_ch, out_ch):
+        super(double_conv, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_ch, out_ch, 3, padding=1),
+            nn.BatchNorm2d(out_ch),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(out_ch, out_ch, 3, padding=1),
+            nn.BatchNorm2d(out_ch),
+            nn.LeakyReLU(inplace=True)
+        )
 
-        xu3b = torch.cat([xu3[:, :, 1:-1, 1:-1], x3b], dim=1)
-        x5a = F.leaky_relu(self.bn5a(self.c5a(xu3b)),
-                           negative_slope=0.2, inplace=True)  # 64, 30, 30
-        x5b = F.leaky_relu(self.bn5b(self.c5b(x5a)),
-                           negative_slope=0.2, inplace=True)  # 64, 28, 28
+    def forward(self, x):
+        x = self.conv(x)
+        return x
 
-        xu2 = F.leaky_relu(self.ubn2(self.uc2(x5b)),
-                           negative_slope=0.2, inplace=True)  # 64, 58, 58
-        xu2b = torch.cat([xu2[:, :, 1:-1, 1:-1], x2b], dim=1)  # 64, 56, 56
-        x6a = F.leaky_relu(self.bn6a(self.c6a(xu2b)),
-                           negative_slope=0.2, inplace=True)  # 32, 56, 56
-        x6b = F.leaky_relu(self.bn6b(self.c6b(x6a)),
-                           negative_slope=0.2, inplace=True)
 
-        xu1 = F.leaky_relu(self.ubn1(self.uc1(x6b)),
-                           negative_slope=0.2, inplace=True)
-        xu1b = torch.cat([xu1[:, :, 1:-1, 1:-1], x1b], dim=1)
-        x8a = F.leaky_relu(self.bn8a(self.c8a(xu1b)),
-                           negative_slope=0.2, inplace=True)
-        x8 = self.c8b(x8a)
-        return F.tanh(x8)
+class inconv(nn.Module):
+    def __init__(self, in_ch, out_ch):
+        super(inconv, self).__init__()
+        self.conv = double_conv(in_ch, out_ch)
+
+    def forward(self, x):
+        x = self.conv(x)
+        return x
+
+
+class down(nn.Module):
+    def __init__(self, in_ch, out_ch):
+        super(down, self).__init__()
+        self.mpconv = nn.Sequential(
+            nn.MaxPool2d(2),
+            double_conv(in_ch, out_ch)
+        )
+
+    def forward(self, x):
+        x = self.mpconv(x)
+        return x
+
+
+class up(nn.Module):
+    def __init__(self, in_ch, out_ch, bilinear=True):
+        super(up, self).__init__()
+
+        #  would be a nice idea if the upsampling could be learned too,
+        #  but my machine do not have enough memory to handle all those weights
+        if bilinear:
+            self.up = nn.Upsample(scale_factor=2)
+        else:
+            self.up = nn.ConvTranspose2d(in_ch, out_ch, 2, stride=2)
+
+        self.conv = double_conv(in_ch, out_ch)
+
+    def forward(self, x1, x2):
+        x1 = self.up(x1)
+        diffX = x1.size()[2] - x2.size()[2]
+        diffY = x1.size()[3] - x2.size()[3]
+        x2 = F.pad(x2, (diffX // 2, int(diffX / 2),
+                        diffY // 2, int(diffY / 2)))
+        x = torch.cat([x2, x1], dim=1)
+        x = self.conv(x)
+        return x
+
+
+class outconv(nn.Module):
+    def __init__(self, in_ch, out_ch):
+        super(outconv, self).__init__()
+        self.conv = nn.Conv2d(in_ch, out_ch, 1)
+
+    def forward(self, x):
+        x = self.conv(x)
+        return x
