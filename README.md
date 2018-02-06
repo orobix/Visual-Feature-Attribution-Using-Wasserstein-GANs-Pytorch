@@ -92,7 +92,7 @@ This script takes the following command line options:
 
 - `num_samples`: number of samples to generate for each label (`total samples = num_samples * 2`)
 
-Running the command without arguments will generate a total of 20k 1x112x112 png images (10k images in `data` and 10k masks in `masks`, masks are not needed for this prroject), with inner squares of 20x20 pixels and a maximum random offset for the offcentre squares of 5 pixels. 
+Running the command without arguments will generate a total of 20k 1x128x128 png images (10k images in `data` and 10k masks in `masks`, masks are not needed for this prroject), with inner squares of 20x20 pixels and a maximum random offset for the offcentre squares of 5 pixels. 
 
 ### Training
 
