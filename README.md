@@ -6,6 +6,13 @@ This code aims to reproduce results obtained in the paper ["Visual Feature Attri
 
 This repository contains the code to reproduce results for the paper cited above, where the authors presents a novel feature attribution technique based on Wasserstein Generative Adversarial Networks (WGAN). The code works for both synthetic (2D) and real 3D neuroimaging data, you can check below for a brief description of the two datasets.
 
+### Disease maps examples
+
+Here is an example of what the generator/mapper network should produce (one frame every 50 iterations, left: input, right: disease map for sinthetic data at iteration 50 * (its + 1))
+
+![disease mpas examples](https://i.imgur.com/TGreChH.gifv)
+
+
 ### Synthetic Dataset
 
 >"Data:
