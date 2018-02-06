@@ -133,6 +133,12 @@ This script takes the following command line options:
 
 Running the command without arguments will train the models with the default hyperparamters values (producing results shown above).
 
+
+## Models
+
+Instead of using the models described in the paper we used an [UNet](https://github.com/milesial/Pytorch-UNet) as generator and a [DCGAN_D](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py) as discriminator.
+
+
 ## Useful repositories and code
 
  - [ganhacks](https://github.com/soumith/ganhacks): Starter from "How to Train a GAN?" at NIPS2016
@@ -143,9 +149,9 @@ Running the command without arguments will train the models with the default hyp
 
  - [c3d-pytorch](https://github.com/DavideA/c3d-pytorch/blob/master/C3D_model.py): Model used as discriminator in the reference paper
 
-## Models
+ - [Pytorch-UNet](https://github.com/milesial/Pytorch-UNet): Model used as genertator in this repository
 
-Instead of using the models described in the paper we used an [UNet](https://github.com/milesial/Pytorch-UNet) as generator and a [DCGAN_D](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py) as discriminator.
+ - [cdcgan](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py): Model used as discriminator in this repository
 
 ## .bib citation
 cite the paper as follow (copied-pasted it from arxiv for you):
