@@ -22,12 +22,12 @@ classes, which model a healthy control group (label 0) and a
 patient group (label 1). The images were split evenly across
 the two categories.  We closely followed the synthetic data
 generation process described in [31][[SubCMap: Subject and Condition Specific Effect Maps](https://arxiv.org/abs/1701.02610)]
-where anomaly effects were studied in smaller cohorts of registered images.
+where disease effects were studied in smaller cohorts of registered images.
 The control group (label 0) contained images with ran-
 dom iid Gaussian noise convolved with a Gaussian blurring
 filter.  Examples are shown in Fig.  3.  The patient images
 (label 1) also contained the noise,  but additionally exhib-
-ited one of two anomaly effects which was generated from a
+ited one of two disease effects which was generated from a
 ground-truth effect map: a square in the centre and a square
 in the lower right (subtype A), or a square in the centre and a
 square in the upper left (subtype B). Importantly, both dis-
@@ -64,7 +64,7 @@ malised them to a range from -1 to 1. The final volumes
 had a size of 128x160x112 voxels."
 
 >"Data used in preparation of this article were obtained from
-the Alzheimers anomaly Neuroimaging Initiative (ADNI) database
+the Alzheimers disease Neuroimaging Initiative (ADNI) database
 ([adni.loni.usc.edu](http://adni.loni.usc.edu)).
 As such, the investigators within the ADNI
 contributed to the design and implementation of ADNI and/or provided data but 
