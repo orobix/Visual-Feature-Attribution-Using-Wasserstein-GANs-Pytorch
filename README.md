@@ -151,7 +151,7 @@ Instead of using the models described in the paper we used an [UNet](https://git
 
  - [Pytorch-UNet](https://github.com/milesial/Pytorch-UNet): Model used as genertator in this repository
 
- - [cdcgan](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py): Model used as discriminator in this repository
+ - [dcgan](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py): Model used as discriminator in this repository
 
 ## .bib citation
 cite the paper as follow (copied-pasted it from arxiv for you):
