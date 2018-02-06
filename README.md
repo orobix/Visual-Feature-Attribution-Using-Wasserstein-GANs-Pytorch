@@ -82,7 +82,7 @@ In order to generate the synthetic dataset, cd into this repo's `src` root folde
 
 This script takes the following command line options:
 
-- `out_dir`: directory for the generated files (default to `../dataset/`)
+- `out_dir`: directory for the generated files, default to `../dataset/`
 
 - `image_size`: width and heigth for the generated images
 
