@@ -4,6 +4,9 @@ import torch.nn.functional as F
 
 
 class UNet(nn.Module):
+    '''
+    Generator model (https://github.com/milesial/Pytorch-UNet)
+    '''
     def __init__(self, n_channels=1, n_classes=1, nf=16):
         super(UNet, self).__init__()
         self.nf = nf

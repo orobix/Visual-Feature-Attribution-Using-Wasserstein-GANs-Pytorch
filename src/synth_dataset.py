@@ -5,7 +5,10 @@ from torch.utils.data import Dataset
 
 
 class SynthDataset(Dataset):
-    """docstring for SynthDataset"""
+    '''
+    Subtype of torch.utils.data.Dataset.
+    for more info: http://pytorch.org/docs/master/data.html
+    '''
 
     def __init__(self, image_size, root_dir='../dataset/', disease=False, transform=None):
         super(SynthDataset, self).__init__()
@@ -46,7 +49,7 @@ class SynthDataset(Dataset):
         x = self.X[idx]
 
         if self.transform:
-            x = self.transform(self.X[idx])
+            x = self.transform(x)
         return x, self.labels[idx], self.subtypes[idx]
 
 

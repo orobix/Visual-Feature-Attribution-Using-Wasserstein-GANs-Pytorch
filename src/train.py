@@ -31,7 +31,7 @@ MU_ORIG = 372.758283
 
 def init_seed(opt):
     '''
-    Disable cudnn to for reproducibility
+    Disable cudnn to maximize reproducibility
     '''
     torch.cuda.cudnn_enabled = False
     random.seed(opt.manual_seed)
@@ -51,6 +51,10 @@ def init_experiment(opt):
 
 
 def weights_init(m):
+    '''
+    Initialize cnn weithgs.
+    for more info: http://cs231n.github.io/neural-networks-2/#init
+    '''
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
         m.weight.data.normal_(0.0, 0.02)
@@ -60,6 +64,9 @@ def weights_init(m):
 
 
 def init_model(opt):
+    '''
+    Initialize generator and disciminator
+    '''
     net_g = UNet(nf=opt.ngf)
     net_d = DCGAN_D(opt.image_size, opt.nc,
                     opt.ndf)
@@ -68,7 +75,7 @@ def init_model(opt):
 
 def init_optimizer(opt, net_g, net_d):
     '''
-    Initialize optimizer
+    Initialize optimizers
     TODO use options for beta2 and wd
     '''
     optimizer_g = optim.Adam(net_g.parameters(), lr=opt.learning_rate_g, betas=(
@@ -110,6 +117,9 @@ def init_dataset(opt):
 
 
 def train(opt, healthy_dataloader, disease_dataloader, net_g, net_d, optim_g, optim_d):
+    '''
+    Run the trainig algorithm.
+    '''
     model_input = torch.FloatTensor(
         opt.batch_size, 1, opt.image_size, opt.image_size)
     fixed_model_input = iter(disease_dataloader).next()[0]

@@ -4,6 +4,9 @@ import torch.nn.parallel
 
 
 class DCGAN_D(nn.Module):
+    '''
+    Discriminator model (https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py)
+    '''
 
     def __init__(self, isize, nc, ndf, ngpu=1, n_extra_layers=0):
         super(DCGAN_D, self).__init__()
