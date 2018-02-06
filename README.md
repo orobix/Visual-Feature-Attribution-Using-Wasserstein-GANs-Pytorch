@@ -1,6 +1,6 @@
 # Visual Feature Attribution Using Wasserstein GANs (with Python and Pytorch)
 
-This code aims to reproduce results obtained in the paper ["Visual Feature Attribution using Wasserstein GANs"](https://arxiv.org/abs/1711)
+This code aims to reproduce results obtained in the paper ["Visual Feature Attribution using Wasserstein GANs"](https://arxiv.org/abs/1711.08998)
 
 ## Description
 
@@ -129,7 +129,7 @@ This script takes the following command line options:
 
 - `cuda`: enables cuda (store True)
 
-- `manual_seed`: input for the manual seeds initializations, default=7
+- `manual_seed`: input for the manual seeds initializations, default to `7`
 
 Running the command without arguments will train the models with the default hyperparamters values (producing results shown above).
 
