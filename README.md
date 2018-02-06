@@ -145,7 +145,7 @@ Running the command without arguments will train the models with the default hyp
 
 ## Models
 
-Instead of using the models described in the paper we used an [UNet](https://github.com/milesial/Pytorch-UNet) as Generator and a [DCGAN_D](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py) as discriminator.
+Instead of using the models described in the paper we used an [UNet](https://github.com/milesial/Pytorch-UNet) as generator and a [DCGAN_D](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py) as discriminator.
 
 ## .bib citation
 cite the paper as follow (copied-pasted it from arxiv for you):
