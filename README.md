@@ -8,7 +8,7 @@ This repository contains the code to reproduce results for the paper cited above
 
 ### anomaly maps examples
 
-Here is an example of what the generator/mapper network should produce: ctrl-click on the below image to open the gifv in a new tab (one frame every 50 iterations, left: input, right: anomaly map for sinthetic data at iteration 50 * (its + 1)).
+Here is an example of what the generator/mapper network should produce: ctrl-click on the below image to open the gifv in a new tab (one frame every 50 iterations, left: input, right: anomaly map for synthetic data at iteration 50 * (its + 1)).
 
 [![anomaly maps examples](doc/imgs/fake_samples_03100.png)](https://i.imgur.com/TGreChH.gifv)
 
