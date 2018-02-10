@@ -154,7 +154,7 @@ Instead of using the models described in the paper we used an [UNet](https://git
  - [dcgan](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py): Model used as discriminator in this repository
 
 ## .bib citation
-cite the paper as follow (copied-pasted it from arxiv for you):
+cite the paper as follows (copied-pasted it from arxiv for you):
 
     @article{DBLP:journals/corr/abs-1711-08998,
       author    = {Christian F. Baumgartner and
