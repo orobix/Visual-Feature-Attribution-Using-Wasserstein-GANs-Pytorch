@@ -2,6 +2,8 @@
 *.DS_Store
 dataset/
 samples/
+*.tar.gz
+preproc_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

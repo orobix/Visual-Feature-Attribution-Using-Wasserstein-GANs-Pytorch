@@ -9,17 +9,20 @@ import torchvision.utils as vutils
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 
+from torch import nn
+from torch import autograd
 from torch.autograd import Variable
 
-from parser import get_parser
 
+from parser import get_parser
+from models.critics import C3DFCN
+from models.mask_generators import UNet
 from synth_dataset import SynthDataset
 
-from models.generator import UNet
-from models.discriminator import DCGAN_D
+import matplotlib.pyplot as plt
 
-
-LAMBDA_NORM = 1.5e-4
+LAMBDA_NORM = 100
+LAMBDA = 10
 
 
 def init_seed(opt):
@@ -45,11 +48,10 @@ def init_experiment(opt):
 def weights_init(m):
     '''
     Initialize cnn weithgs.
-    for more info: http://cs231n.github.io/neural-networks-2/#init
     '''
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
-        m.weight.data.normal_(0.0, 0.02)
+        m.weight.data = torch.nn.init.kaiming_normal(m.weight.data, 2)
     elif classname.find('BatchNorm') != -1:
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
@@ -60,7 +62,8 @@ def init_model(opt):
     Initialize generator and disciminator
     '''
     net_g = UNet(nf=opt.num_filters_g)
-    net_d = DCGAN_D(opt.image_size, opt.channels_number, opt.num_filters_d)
+    net_g = nn.Sequential(net_g, nn.Tanh())
+    net_d = C3DFCN(opt.channels_number, opt.num_filters_d)
     return net_g, net_d
 
 
@@ -76,35 +79,52 @@ def init_optimizer(opt, net_g, net_d):
     return optimizer_g, optimizer_d
 
 
-def init_dataset(opt):
+def init_synth_dataloader(opt, anomaly, mode='train'):
     '''
     Initialize both datasets and dataloaders
     '''
-    dataset = SynthDataset(anomaly=False,
-                           root_dir=opt.dataset_root,
-                           image_size=opt.image_size,
+    dataset = SynthDataset(opt=opt, anomaly=anomaly,
+                           mode=mode,
                            transform=transforms.Compose([
-                               transforms.ToTensor(),
-                               transforms.Normalize(
-                                   (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                               torch.FloatTensor,
+
                            ]))
 
-    anomaly_dataset = SynthDataset(anomaly=True,
-                                   root_dir=opt.dataset_root,
-                                   image_size=opt.image_size,
-                                   transform=transforms.Compose([
-                                       transforms.ToTensor(),
-                                       transforms.Normalize(
-                                           (0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-                                   ]))
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size,
+                                             shuffle=True, drop_last=True)
 
-    healthy_dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size,
-                                                     shuffle=True, drop_last=True)
+    return dataloader
 
-    anomaly_dataloader = torch.utils.data.DataLoader(anomaly_dataset, batch_size=opt.batch_size,
-                                                     shuffle=True, drop_last=True)
 
-    return healthy_dataloader, anomaly_dataloader
+def calc_gradient_penalty(netD, real_data, fake_data):
+    '''
+    Calculate gradient penalty as in  "Improved Training of Wasserstein GANs"
+    https://github.com/caogang/wgan-gp
+    '''
+    bs, ch, h, w = real_data.shape
+
+    use_cuda = real_data.is_cuda
+    alpha = torch.rand(bs, 1)
+    alpha = alpha.expand(bs, real_data.nelement() /
+                         bs).contiguous().view(bs, ch, h, w)
+    alpha = alpha.cuda() if use_cuda else alpha
+
+    interpolates = alpha * real_data + ((1 - alpha) * fake_data)
+
+    if use_cuda:
+        interpolates = interpolates.cuda()
+    interpolates = autograd.Variable(interpolates, requires_grad=True)
+
+    disc_interpolates = netD(interpolates)
+
+    gradients = autograd.grad(outputs=disc_interpolates, inputs=interpolates,
+                              grad_outputs=torch.ones(disc_interpolates.size()).cuda() if use_cuda else torch.ones(
+                                  disc_interpolates.size()),
+                              create_graph=True, retain_graph=True, only_inputs=True)[0]
+    gradients = gradients.view(gradients.size(0), -1)
+
+    gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * LAMBDA
+    return gradient_penalty
 
 
 def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, optim_d):
@@ -142,15 +162,12 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                 p.requires_grad = True  # they are set to False below in net_g update
 
             # train the discriminator d_iters times
-            if gen_iterations < 25 or gen_iterations % 500 == 0:
+            if gen_iterations < 25 or gen_iterations % 100 == 0:
                 d_iters = 100
+                print('Doing **critic** update steps ({} steps)'.format(d_iters))
             else:
                 d_iters = opt.d_iters
             j = 0
-            labels = [mone, one]
-            # occasionally switch labels
-            if np.random.randint(20) == 0:
-                labels = labels[::-1]
             while j < d_iters and i < len(anomaly_dataloader):
                 j += 1
 
@@ -166,9 +183,8 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                 model_input.resize_as_(real_cpu).copy_(real_cpu)
                 inputv = Variable(model_input)
                 err_d_real = net_d(inputv)
-                err_d_real.backward(labels[1])
 
-                # train with difference (anomalous - anomaly map)
+                # train with sum (anomalous + anomaly map)
                 data = anomaly_data_iter.next()
 
                 anomaly_cpu = data[0]
@@ -179,13 +195,18 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                 model_input.resize_as_(anomaly_cpu).copy_(anomaly_cpu)
                 inputv = Variable(model_input)
 
-                anomaly_map = Variable(net_g(inputv).data)
+                anomaly_map = net_g(inputv)
 
                 outputv = anomaly_map
-                img_sum = inputv - outputv
+                img_sum = inputv + outputv
 
                 err_d_anomaly_map = net_d(img_sum)
-                err_d_anomaly_map.backward(labels[0])
+
+                cri_loss = err_d_real.mean() - err_d_anomaly_map.mean()
+                cri_loss += calc_gradient_penalty(net_d,
+                                                  model_input, img_sum.data)
+
+                cri_loss.backward()
 
                 err_d = err_d_real - err_d_anomaly_map
                 optim_d.step()
@@ -196,25 +217,33 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
             for p in net_d.parameters():
                 p.requires_grad = False  # to avoid computation
             net_g.zero_grad()
-            # in case our last batch was the tail batch of the dataloader,
-            # make sure we feed a full batch of noise
+
             anomaly_map = net_g(inputv)
-            # we want to minimize the l1 norm for the anomaly map
-            (anomaly_map.norm(1) * LAMBDA_NORM).backward(retain_graph=True)
-            err_g = net_d(inputv - anomaly_map)
-            err_g.backward(labels[1])
+
+            # minimize the l1 norm for the anomaly map
+            gen_loss = net_d(inputv + anomaly_map).mean()
+            err_g = gen_loss
+
+            gen_loss += torch.abs(anomaly_map).mean() * LAMBDA_NORM
+            gen_loss.backward()
+
             optim_g.step()
             gen_iterations += 1
 
-            # print and save
             print('[%d/%d][%d/%d][%d] Loss_D: %f Loss_G: %f Loss_D_real: %f Loss_D_diff %f'
                   % (epoch, opt.nepochs, i, len(healthy_dataloader), gen_iterations,
                      err_d.data[0], err_g.data[0], err_d_real.data[0], err_d_anomaly_map.data[0]))
-            if gen_iterations % 50 == 0:
-                anomaly_map = net_g(Variable(fixed_model_input, volatile=True))
-                anomaly_map.data + anomaly_map.data.mul(0.5).add(0.5)
-                vutils.save_image(
-                    anomaly_map.data, '{:}/fake_samples_{:05d}.png'.format(opt.experiment, gen_iterations))
+
+            # print and save
+            if gen_iterations % 1 == 0:
+                with torch.no_grad():
+                    anomaly_map = -net_g(Variable(fixed_model_input))
+                    inp = np.vstack(np.hsplit(np.hstack(fixed_model_input[:, 0]), 4))
+                    img = np.vstack(np.hsplit(np.hstack(anomaly_map.data[:, 0]), 4))
+                    path = '{:}/fake_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
+                    plt.imsave(path, img, cmap='gray')
+                    path = '{:}/sum_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
+                    plt.imsave(path, inp + img, cmap='gray')
 
         # do checkpointing
         torch.save(net_g.state_dict(),
@@ -238,12 +267,24 @@ def main():
     init_experiment(options)
     init_seed(options)
 
-    healthy_dataloader, anomaly_dataloader = init_dataset(options)
+    healthy_dataloader_train = init_synth_dataloader(
+        options, anomaly=False, mode='train')
+    healthy_dataloader_val = init_synth_dataloader(
+        options, anomaly=False, mode='val')
+    healthy_dataloader_test = init_synth_dataloader(
+        options, anomaly=False, mode='test')
+
+    anomaly_dataloader_train = init_synth_dataloader(
+        options, anomaly=True, mode='train')
+    anomaly_dataloader_val = init_synth_dataloader(
+        options, anomaly=True, mode='val')
+    anomaly_dataloader_test = init_synth_dataloader(
+        options, anomaly=True, mode='test')
 
     net_g, net_d = init_model(options)
 
-    net_g.apply(weights_init)
-    net_d.apply(weights_init)
+    # net_g.apply(weights_init)
+    # net_d.apply(weights_init)
 
     optim_g, optim_d = init_optimizer(options, net_g=net_g, net_d=net_d)
 
@@ -252,7 +293,7 @@ def main():
         net_d = net_d.cuda()
 
     train(options,
-          healthy_dataloader, anomaly_dataloader,
+          healthy_dataloader_train, anomaly_dataloader_train,
           net_g=net_g, net_d=net_d,
           optim_g=optim_g, optim_d=optim_d)
 
