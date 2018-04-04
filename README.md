@@ -8,7 +8,7 @@ This repository contains the code to reproduce results for the paper cited above
 
 ### anomaly maps examples
 
-Here is an example of what the generator/mapper network should produce: ctrl-click on the below image to open the gifv in a new tab (one frame every 50 iterations, left: input, right: anomaly map for sinthetic data at iteration 50 * (its + 1)).
+Here is an example of what the generator/mapper network should produce: ctrl-click on the below image to open the gifv in a new tab (one frame every 50 iterations, left: input, right: anomaly map for synthetic data at iteration 50 * (its + 1)).
 
 [![anomaly maps examples](doc/imgs/fake_samples_03100.png)](https://i.imgur.com/TGreChH.gifv)
 
@@ -22,12 +22,12 @@ classes, which model a healthy control group (label 0) and a
 patient group (label 1). The images were split evenly across
 the two categories.  We closely followed the synthetic data
 generation process described in [31][[SubCMap: Subject and Condition Specific Effect Maps](https://arxiv.org/abs/1701.02610)]
-where anomaly effects were studied in smaller cohorts of registered images.
+where disease effects were studied in smaller cohorts of registered images.
 The control group (label 0) contained images with ran-
 dom iid Gaussian noise convolved with a Gaussian blurring
 filter.  Examples are shown in Fig.  3.  The patient images
 (label 1) also contained the noise,  but additionally exhib-
-ited one of two anomaly effects which was generated from a
+ited one of two disease effects which was generated from a
 ground-truth effect map: a square in the centre and a square
 in the lower right (subtype A), or a square in the centre and a
 square in the upper left (subtype B). Importantly, both dis-
@@ -64,7 +64,7 @@ malised them to a range from -1 to 1. The final volumes
 had a size of 128x160x112 voxels."
 
 >"Data used in preparation of this article were obtained from
-the Alzheimers anomaly Neuroimaging Initiative (ADNI) database
+the Alzheimers disease Neuroimaging Initiative (ADNI) database
 ([adni.loni.usc.edu](http://adni.loni.usc.edu)).
 As such, the investigators within the ADNI
 contributed to the design and implementation of ADNI and/or provided data but 
@@ -110,7 +110,7 @@ This script takes the following command line options:
 
 - `cuda`: enables cuda (store True)
 
-- `manual_seed`: input for the manual seeds initializations, default=7
+- `manual_seed`: input for the manual seeds initializations, default to `7`
 
 Running the command without arguments will train the models with the default hyperparamters values (producing results shown above).
 
@@ -133,10 +133,10 @@ We ported all models found in the original repository in PyTorch, you can find a
 
  - [Pytorch-UNet](https://github.com/milesial/Pytorch-UNet): Model used as genertator in this repository
 
- - [cdcgan](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py): Model used as discriminator in this repository
+ - [dcgan](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py): Model used as discriminator in this repository
 
 ## .bib citation
-cite the paper as follow (copied-pasted it from arxiv for you):
+cite the paper as follows (copied-pasted it from arxiv for you):
 
     @article{DBLP:journals/corr/abs-1711-08998,
       author    = {Christian F. Baumgartner and
@@ -160,4 +160,4 @@ cite the paper as follow (copied-pasted it from arxiv for you):
 
 This project is licensed under the MIT License
 
-Copyright (c) 2016 Daniele Cortinovis, Orobix Srl (www.orobix.com).
+Copyright (c) 2018 Daniele E. Ciriello, Orobix Srl (www.orobix.com).
