@@ -1,55 +1,80 @@
-import cv2
-import os
 import numpy as np
 from torch.utils.data import Dataset
+from data import synthetic_data_loader
+
+
+CACHE = {}
+
+DSET_SPLIT_SIZES = {
+    'train': [0, 0.8**2],
+    'val': [0.8**2, 0.8],
+    'test': [0.8, 1],
+    'pred': [0, 1],
+    None: [0, 1],
+}
 
 
 class SynthDataset(Dataset):
     '''
     Subtype of torch.utils.data.Dataset.
     for more info: http://pytorch.org/docs/master/data.html
+    This class use the (copied) cope from the reference paper's official repo
+    https://github.com/baumgach/vagan-code
     '''
 
-    def __init__(self, image_size, root_dir='../dataset/', anomaly=False, transform=None):
+    def __init__(self, opt, anomaly, mode='train', transform=None):
+        # def __init__(self, image_size, root_dir='../dataset/', anomaly=False, transform=None):
         super(SynthDataset, self).__init__()
-        self.root_dir = root_dir
-        self.anomaly = anomaly
         self.transform = transform
+        if 'loaded' not in CACHE:
+            self.load_cache(opt)
+        split_size = DSET_SPLIT_SIZES[mode]
+        idxs = np.where(CACHE['y'] == int(anomaly))[0]
+        l1 = int(len(idxs) * split_size[0])
+        l2 = int(len(idxs) * split_size[1])
+        self.idxs = idxs[l1:l2]
 
-        check_root = os.path.join(self.root_dir, 'data')
-        self.names = [os.path.splitext(f)[0] for f in os.listdir(check_root) if os.path.isfile(os.path.join(check_root, f))]
+    def load_cache(self, opt):
+        data = synthetic_data_loader.load_and_maybe_generate_data(output_folder=opt.dataset_root,
+                                                                  image_size=opt.image_size,
+                                                                  force_overwrite=False)
 
-        if anomaly is not None:
-            self.names = [n for n in self.names if bool(int(n.split('_')[1])) == bool(anomaly)]
+        lhr_size = data['features'].shape[0]
+        imsize = int(np.sqrt(lhr_size))
 
-        x_paths = [os.path.join(self.root_dir, 'data', n) + '.png' for n in self.names]
+        images = np.reshape(data['features'][:], [imsize, imsize, -1])
+        images = np.transpose(images, [2, 0, 1])
 
-        self.X = np.zeros((len(x_paths), image_size, image_size, 1))
-        for i in range(len(x_paths)):
-            self.X[i] = self.load_sample(x_paths[i])
+        masks = np.reshape(data['gt'][:], [imsize, imsize, -1])
+        masks = np.transpose(masks, [2, 0, 1])
 
-        self.labels = np.asarray([int(n.split('_')[1]) for n in self.names])
-        self.subtypes = np.asarray([int(n.split('_')[2]) for n in self.names])
+        labels = data['labels'][:]
 
-        self.mean = self.X.mean(1)
-        self.std = self.X.std()
-
-    def load_sample(self, path):
-        '''
-        TODO test scipy.misc.imread(path)
-        '''
-        img = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-        img = np.expand_dims(img, 2)
-        return img
+        CACHE['X'] = images
+        CACHE['y'] = labels
+        CACHE['masks'] = masks
+        CACHE['loaded'] = True
 
     def __len__(self):
-        return len(self.X)
+        return len(self.idxs)
 
     def __getitem__(self, idx):
-        x = self.X[idx]
+        idx = self.idxs[idx]
+        x = CACHE['X'][idx]
+        y = CACHE['y'][idx]
+        mask = CACHE['masks'][idx]
+
+        x = np.expand_dims(x, 0)
 
         if self.transform:
             x = self.transform(x)
-        return x, self.labels[idx], self.subtypes[idx]
+        return x, y, mask
 
-
+if __name__ == '__main__':
+    import torch
+    dset = SynthDataset(None, True)
+    healthy_dataloader = torch.utils.data.DataLoader(dset, batch_size=64,
+                                                     shuffle=True, drop_last=True)
+    for batch in healthy_dataloader:
+        print(batch)
+        break
