@@ -1,6 +1,6 @@
 # Visual Feature Attribution Using Wasserstein GANs (with Python and Pytorch)
 
-This code aims to reproduce results obtained in the paper ["Visual Feature Attribution using Wasserstein GANs"](https://arxiv.org/abs/1711)
+This code aims to reproduce results obtained in the paper ["Visual Feature Attribution using Wasserstein GANs"](https://arxiv.org/abs/1711) ([official repo, TensorFlow code](https://github.com/baumgach/vagan-code/))
 
 ## Description
 
@@ -75,25 +75,6 @@ report. A complete listing of ADNI investigators can be found at:
 
 ## Usage
 
-### Synthetic data generation
-In order to generate the synthetic dataset, cd into this repo's `src` root folder and execute:
-
-    $ python generate_synth_data.py
-
-This script takes the following command line options:
-
-- `out_dir`: directory for the generated files, default to `../dataset/`
-
-- `image_size`: width and heigth for the generated images
-
-- `square_size`: width and heigth for the inner squares in the masks (anomaly size)
-
-- `offset`: maximum absolute offset in pixels for the off-centre inner squares in the masks (off centre anomalies max offset)
-
-- `num_samples`: number of samples to generate for each label (`total samples = num_samples * 2`)
-
-Running the command without arguments will generate a total of 20k 1x128x128 png images (10k images in `data` and 10k masks in `masks`, masks are not needed for this prroject), with inner squares of 20x20 pixels and a maximum random offset for the offcentre squares of 5 pixels. 
-
 ### Training
 
 To train the WGAN on this task, cd into this repo's `src` root folder and execute:
@@ -109,7 +90,7 @@ This script takes the following command line options:
 
 - `batch_size`: input batch size, default to `32`
 
-- `image_size`: the height / width of the input image to network, default to `128`
+- `image_size`: the height / width of the input image to network, default to `112`
 
 - `channels_number`: input image channels, default to `1`
 
@@ -121,9 +102,9 @@ This script takes the following command line options:
 
 - `d_iters`: number of discriminator iterations per each generator iter, default to `5`
 
-- `learning_rate_g`: learning rate for generator, default to `1e-5`
+- `learning_rate_g`: learning rate for generator, default to `1e-3`
 
-- `learning_rate_d`: learning rate for discriminator, default to `1e-5`
+- `learning_rate_d`: learning rate for discriminator, default to `1e-3`
 
 - `beta1`: beta1 for adam. default to `0.0`
 
@@ -136,10 +117,11 @@ Running the command without arguments will train the models with the default hyp
 
 ## Models
 
-Instead of using the models described in the paper we used an [UNet](https://github.com/milesial/Pytorch-UNet) as generator and a [DCGAN_D](https://github.com/lim0606/pytorch-geometric-gan/blob/master/models/dcgan.py) as discriminator.
-
+We ported all models found in the original repository in PyTorch, you can find all implemented models here: https://github.com/orobix/Visual-Feature-Attribution-Using-Wasserstein-GANs-Pytorch/tree/master/src/models 
 
 ## Useful repositories and code
+
+ - [vagan-code](https://github.com/baumgach/vagan-code): Reposiory for the reference paper from its authors
 
  - [ganhacks](https://github.com/soumith/ganhacks): Starter from "How to Train a GAN?" at NIPS2016
 

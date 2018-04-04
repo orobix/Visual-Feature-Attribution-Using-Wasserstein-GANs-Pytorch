@@ -21,7 +21,7 @@ def get_parser():
     parser.add_argument('-isize', '--image_size',
                         type=int,
                         help='the height / width of the input image to network',
-                        default=128)
+                        default=112)
 
     parser.add_argument('-nc', '--channels_number',
                         type=int,
@@ -51,12 +51,12 @@ def get_parser():
     parser.add_argument('-lrG', '--learning_rate_g',
                         type=float,
                         help='learning rate for generator, default=1e-5',
-                        default=1e-5)
+                        default=1e-3)
 
     parser.add_argument('-lrD', '--learning_rate_d',
                         type=float,
                         help='learning rate for discriminator, default=1e-5',
-                        default=1e-5)
+                        default=1e-3)
 
     parser.add_argument('-b1', '--beta1',
                         type=float,
