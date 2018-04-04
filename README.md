@@ -1,4 +1,4 @@
-# Visual Feature Attribution Using Wasserstein GANs (with Python and Pytorch)
+# PyTorch implementation of VAGAN: Visual Feature Attribution Using Wasserstein GANs
 
 This code aims to reproduce results obtained in the paper ["Visual Feature Attribution using Wasserstein GANs"](https://arxiv.org/abs/1711) ([official repo, TensorFlow code](https://github.com/baumgach/vagan-code/))
 
