@@ -235,7 +235,7 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                      err_d.data[0], err_g.data[0], err_d_real.data[0], err_d_anomaly_map.data[0]))
 
             # print and save
-            if gen_iterations % 1 == 0:
+            if gen_iterations % 50 == 0:
                 anomaly_map = -net_g(Variable(fixed_model_input, requires_grad=False))
                 inp = np.vstack(np.hsplit(np.hstack(fixed_model_input[:, 0]), 4))
                 img = np.vstack(np.hsplit(np.hstack(anomaly_map.data[:, 0]), 4))
