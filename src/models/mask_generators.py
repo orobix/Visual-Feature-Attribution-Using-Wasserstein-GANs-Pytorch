@@ -75,4 +75,3 @@ class UNet(nn.Module):
         cat1 = crop_and_concat(xu1, x0)
         x7 = self.conv7(cat1)
         return x7
-

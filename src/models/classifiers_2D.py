@@ -1,5 +1,5 @@
 import torch.nn as nn
-from models.model_utils import conv2d_bn_block, dense_layer_bn
+from models.model_utils import conv2d_bn_block, dense_layer_bn, Identity
 
 
 class NormalNet2D(nn.Module):
@@ -27,7 +27,7 @@ class NormalNet2D(nn.Module):
         )
         self.classifier = nn.Sequential(
             dense_layer_bn(16*nf, 16*nf),
-            dense_layer_bn(16*nf, nlabels, activation=(lambda x: x))
+            dense_layer_bn(16*nf, nlabels, activation=Identity)
         )
 
     def forward(self, x):
@@ -61,7 +61,7 @@ class RebuttalNet2D(nn.Module):
         )
         self.classifier = nn.Sequential(
             nn.AvgPool2d(2),
-            dense_layer_bn(16*nf, nlabels, activation=lambda x: x)
+            dense_layer_bn(16*nf, nlabels, activation=Identity)
         )
 
     def forward(self, x):
@@ -98,7 +98,7 @@ class NormalNetDeeper2D(nn.Module):
         )
         self.classifier = nn.Sequential(
             dense_layer_bn(16*nf, 16*nf),
-            dense_layer_bn(16*nf, nlabels, activation=lambda x: x)
+            dense_layer_bn(16*nf, nlabels, activation=Identity)
         )
 
     def forward(self, x):
@@ -130,7 +130,7 @@ class CamNet2D(nn.Module):
         )
         self.classifier = nn.Sequential(
             nn.AvgPool2d(2),
-            dense_layer_bn(16*nf, nlabels, activation=lambda x: x)
+            dense_layer_bn(16*nf, nlabels, activation=Identity)
         )
 
     def forward(self, x):

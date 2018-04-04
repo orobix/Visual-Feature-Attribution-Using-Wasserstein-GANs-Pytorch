@@ -1,5 +1,5 @@
 import torch.nn as nn
-from models.model_utils import conv3d_bn_block, dense_layer_bn
+from models.model_utils import conv3d_bn_block, dense_layer_bn, Identity
 
 
 class FCNBN(nn.Module):
@@ -26,7 +26,7 @@ class FCNBN(nn.Module):
             conv3d_bn_block(8*nf, 8*nf),
         )
         self.classifier = nn.Sequential(
-            conv3d_bn_block(8*nf, nlabels, kernel=1, activation=lambda x: x),
+            conv3d_bn_block(8*nf, nlabels, kernel=1, activation=Identity),
             nn.AvgPool3d(2),
         )
 
@@ -56,7 +56,7 @@ class AllConvBN(nn.Module):
             conv3d_bn_block(8*nf, 8*nf),
         )
         self.classifier = nn.Sequential(
-            conv3d_bn_block(8*nf, nlabels, kernel=1, activation=lambda x: x),
+            conv3d_bn_block(8*nf, nlabels, kernel=1, activation=Identity),
             nn.AvgPool3d(2),
         )
 
@@ -88,7 +88,7 @@ class C3DBN(nn.Module):
         )
         self.classifier = nn.Sequential(
             dense_layer_bn(8*nf, 16*nf),
-            dense_layer_bn(16*nf, nlabels, activation=lambda x: x),
+            dense_layer_bn(16*nf, nlabels, activation=Identity),
         )
 
     def forward(self, x):

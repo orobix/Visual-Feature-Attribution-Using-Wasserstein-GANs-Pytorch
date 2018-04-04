@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-ACTIVATION = nn.ReLU
+ACTIVATION = nn.LeakyReLU
 
 
 def crop_and_concat(upsampled, bypass, crop=False):
