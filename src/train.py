@@ -105,8 +105,8 @@ def calc_gradient_penalty(netD, real_data, fake_data):
 
     use_cuda = real_data.is_cuda
     alpha = torch.rand(bs, 1)
-    alpha = alpha.expand(bs, real_data.nelement() /
-                         bs).contiguous().view(bs, ch, h, w)
+    alpha = alpha.expand(bs, int(real_data.nelement() /
+                         bs)).contiguous().view(bs, ch, h, w)
     alpha = alpha.cuda() if use_cuda else alpha
 
     interpolates = alpha * real_data + ((1 - alpha) * fake_data)
@@ -236,14 +236,13 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
 
             # print and save
             if gen_iterations % 1 == 0:
-                with torch.no_grad():
-                    anomaly_map = -net_g(Variable(fixed_model_input))
-                    inp = np.vstack(np.hsplit(np.hstack(fixed_model_input[:, 0]), 4))
-                    img = np.vstack(np.hsplit(np.hstack(anomaly_map.data[:, 0]), 4))
-                    path = '{:}/fake_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
-                    plt.imsave(path, img, cmap='gray')
-                    path = '{:}/sum_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
-                    plt.imsave(path, inp + img, cmap='gray')
+                anomaly_map = -net_g(Variable(fixed_model_input, requires_grad=False))
+                inp = np.vstack(np.hsplit(np.hstack(fixed_model_input[:, 0]), 4))
+                img = np.vstack(np.hsplit(np.hstack(anomaly_map.data[:, 0]), 4))
+                path = '{:}/fake_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
+                plt.imsave(path, img, cmap='gray')
+                path = '{:}/sum_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
+                plt.imsave(path, inp + img, cmap='gray')
 
         # do checkpointing
         torch.save(net_g.state_dict(),
