@@ -203,8 +203,7 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                 err_d_anomaly_map = net_d(img_sum)
 
                 cri_loss = err_d_real.mean() - err_d_anomaly_map.mean()
-                cri_loss += calc_gradient_penalty(net_d,
-                                                  model_input, img_sum.data)
+                cri_loss += calc_gradient_penalty(net_d, model_input, img_sum.data)
 
                 cri_loss.backward()
 
@@ -236,11 +235,11 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
 
             # print and save
             if gen_iterations % 50 == 0:
-                anomaly_map = -net_g(Variable(fixed_model_input, requires_grad=False))
+                anomaly_map = net_g(Variable(fixed_model_input, requires_grad=False))
                 inp = np.vstack(np.hsplit(np.hstack(fixed_model_input[:, 0]), 4))
                 img = np.vstack(np.hsplit(np.hstack(anomaly_map.data[:, 0]), 4))
                 path = '{:}/fake_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
-                plt.imsave(path, img, cmap='gray')
+                plt.imsave(path, -img, cmap='gray')
                 path = '{:}/sum_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
                 plt.imsave(path, inp + img, cmap='gray')
 
@@ -282,8 +281,8 @@ def main():
 
     net_g, net_d = init_model(options)
 
-    # net_g.apply(weights_init)
-    # net_d.apply(weights_init)
+    net_g.apply(weights_init)
+    net_d.apply(weights_init)
 
     optim_g, optim_d = init_optimizer(options, net_g=net_g, net_d=net_d)
 
