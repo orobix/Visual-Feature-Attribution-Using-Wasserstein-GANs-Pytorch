@@ -23,7 +23,6 @@ class SynthDataset(Dataset):
     '''
 
     def __init__(self, opt, anomaly, mode='train', transform=None):
-        # def __init__(self, image_size, root_dir='../dataset/', anomaly=False, transform=None):
         super(SynthDataset, self).__init__()
         self.transform = transform
         if 'loaded' not in CACHE:
