@@ -2,7 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-ACTIVATION = nn.LeakyReLU
+
+class Identity(nn.Module):
+
+    def forward(self, x):
+        return x
+
+ACTIVATION = Identity
 
 
 def crop_and_concat(upsampled, bypass, crop=False):
@@ -75,8 +81,3 @@ def conv3d_block(in_channels, out_channels, kernel=3, stride=1, padding=1, activ
         activation(),
     )
 
-
-class Identity(nn.Module):
-
-    def forward(self, x):
-        return x

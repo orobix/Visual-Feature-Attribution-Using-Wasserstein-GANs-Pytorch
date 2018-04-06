@@ -1,5 +1,6 @@
 import torch.nn as nn
-from models.model_utils import (deconv2d_bn_block,
+from models.model_utils import (ACTIVATION,
+                                deconv2d_bn_block,
                                 conv2d_bn_block,
                                 crop_and_concat,
                                 conv2d_block,
@@ -12,50 +13,51 @@ class UNet(nn.Module):
     portings for the models found in the reference reference's official repo
     https://github.com/baumgach/vagan-code
     '''
-    def __init__(self, n_channels=1, n_classes=1, nf=16, batch_norm=True, dimensions=2):
+    def __init__(self, n_channels=1, n_classes=1, nf=16, batch_norm=True, dimensions=2, activation=ACTIVATION):
         super(UNet, self).__init__()
         if dimensions == 2:
             conv_block = conv2d_bn_block if batch_norm else conv2d_block
         else:
             conv_block = conv3d_block
         max_pool = nn.MaxPool2d(2) if int(dimensions) is 2 else nn.MaxPool3d(2)
+        act = activation
 
         self.down0 = nn.Sequential(
-            conv_block(n_channels, nf),
-            conv_block(nf, nf)
+            conv_block(n_channels, nf, activation=act),
+            conv_block(nf, nf, activation=act)
         )
         self.down1 = nn.Sequential(
             max_pool,
-            conv_block(nf, 2*nf),
-            conv_block(2*nf, 2*nf),
+            conv_block(nf, 2*nf, activation=act),
+            conv_block(2*nf, 2*nf, activation=act),
         )
         self.down2 = nn.Sequential(
             max_pool,
-            conv_block(2*nf, 4*nf),
-            conv_block(4*nf, 4*nf),
+            conv_block(2*nf, 4*nf, activation=act),
+            conv_block(4*nf, 4*nf, activation=act),
         )
         self.down3 = nn.Sequential(
             max_pool,
-            conv_block(4*nf, 8*nf),
-            conv_block(8*nf, 8*nf),
+            conv_block(4*nf, 8*nf, activation=act),
+            conv_block(8*nf, 8*nf, activation=act),
         )
 
-        self.up3 = deconv2d_bn_block(8*nf, 4*nf)
+        self.up3 = deconv2d_bn_block(8*nf, 4*nf, activation=act)
 
         self.conv5 = nn.Sequential(
-            conv_block(8*nf, 4*nf),
-            conv_block(4*nf, 4*nf),
+            conv_block(8*nf, 4*nf, activation=act),
+            conv_block(4*nf, 4*nf, activation=act),
         )
-        self.up2 = deconv2d_bn_block(4*nf, 2*nf)
+        self.up2 = deconv2d_bn_block(4*nf, 2*nf, activation=act)
 
         self.conv6 = nn.Sequential(
-            conv_block(4*nf, 2*nf),
-            conv_block(2*nf, 2*nf),
+            conv_block(4*nf, 2*nf, activation=act),
+            conv_block(2*nf, 2*nf, activation=act),
         )
-        self.up1 = deconv2d_bn_block(2*nf, nf)
+        self.up1 = deconv2d_bn_block(2*nf, nf, activation=act)
 
         self.conv7 = nn.Sequential(
-            conv_block(2*nf, nf),
+            conv_block(2*nf, nf, activation=act),
             conv_block(nf, 1, activation=Identity),
         )
 
