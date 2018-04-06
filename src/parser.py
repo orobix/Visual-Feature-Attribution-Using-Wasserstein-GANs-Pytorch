@@ -50,12 +50,12 @@ def get_parser():
 
     parser.add_argument('-lrG', '--learning_rate_g',
                         type=float,
-                        help='learning rate for generator, default=1e-5',
+                        help='learning rate for generator, default=1e-3',
                         default=1e-3)
 
     parser.add_argument('-lrD', '--learning_rate_d',
                         type=float,
-                        help='learning rate for discriminator, default=1e-5',
+                        help='learning rate for discriminator, default=1e-3',
                         default=1e-3)
 
     parser.add_argument('-b1', '--beta1',
