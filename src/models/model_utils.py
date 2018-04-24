@@ -8,7 +8,7 @@ class Identity(nn.Module):
     def forward(self, x):
         return x
 
-ACTIVATION = Identity
+ACTIVATION = nn.ReLU
 
 
 def crop_and_concat(upsampled, bypass, crop=False):
