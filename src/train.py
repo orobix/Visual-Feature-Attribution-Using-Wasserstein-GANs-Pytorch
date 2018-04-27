@@ -218,7 +218,7 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                      err_d.mean(), err_g.item(), err_d_real.mean(), err_d_anomaly_map.mean()))
 
             # print and save
-            if gen_iterations % 1 == 0:
+            if gen_iterations % 50 == 0:
                 torch.set_grad_enabled(False)
                 anomaly_map = net_g(fixed_model_input)
                 inp = np.vstack(np.hsplit(np.hstack(fixed_model_input[:, 0]), 4))
