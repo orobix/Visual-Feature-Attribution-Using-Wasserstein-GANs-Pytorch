@@ -7,8 +7,7 @@ import logging
 import h5py
 
 import os.path
-import utils
-# import config.system as sys_config
+import data.utils as utils
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
@@ -187,7 +186,7 @@ def prepare_data(out_path,
 
 
 if __name__ == "__main__":
-
+    import config.system as sys_config
     synth_preproc_folder = os.path.join(sys_config.project_root, 'synthetic')
 
     image_size = 112
