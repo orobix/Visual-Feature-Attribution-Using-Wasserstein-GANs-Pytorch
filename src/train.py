@@ -51,7 +51,7 @@ def weights_init(m):
     '''
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
-        m.weight.data = torch.nn.init.kaiming_normal(m.weight.data, 2)
+        m.weight.data = torch.nn.init.kaiming_normal_(m.weight.data, 2)
     elif classname.find('BatchNorm') != -1:
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
@@ -101,19 +101,17 @@ def calc_gradient_penalty(netD, real_data, fake_data):
     Calculate gradient penalty as in  "Improved Training of Wasserstein GANs"
     https://github.com/caogang/wgan-gp
     '''
+    device = 'cuda:0' if torch.cuda.is_available() and real_data.is_cuda else 'cpu'
+
     bs, ch, h, w = real_data.shape
 
     use_cuda = real_data.is_cuda
     alpha = torch.rand(bs, 1)
-    alpha = alpha.expand(bs, int(real_data.nelement() /
-                         bs)).contiguous().view(bs, ch, h, w)
-    alpha = alpha.cuda() if use_cuda else alpha
+    alpha = alpha.expand(bs, int(real_data.nelement()/bs)).contiguous().view(bs, ch, h, w)
+    alpha = alpha.to(device)
 
-    interpolates = alpha * real_data + ((1 - alpha) * fake_data)
-
-    if use_cuda:
-        interpolates = interpolates.cuda()
-    interpolates = autograd.Variable(interpolates, requires_grad=True)
+    interpolates = torch.tensor(alpha * real_data + ((1 - alpha) * fake_data), requires_grad=True)
+    interpolates = interpolates.to(device)
 
     disc_interpolates = netD(interpolates)
 
@@ -131,23 +129,16 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
     '''
     Run the trainig algorithm.
     '''
-    model_input = torch.FloatTensor(
-        opt.batch_size, 1, opt.image_size, opt.image_size)
+    device = 'cuda:0' if torch.cuda.is_available() and opt.cuda else 'cpu'
+
+    model_input = torch.zeros((opt.batch_size, 1, opt.image_size, opt.image_size))
     fixed_model_input = iter(anomaly_dataloader).next()[0]
 
-    if opt.cuda:
-        fixed_model_input = fixed_model_input.cuda()
+    fixed_model_input = fixed_model_input.to(device)
+    model_input = model_input.to(device)
 
     vutils.save_image(fixed_model_input.mul(0.5).add(
         0.5), '{0}/real_samples.png'.format(opt.experiment))
-
-    one = torch.FloatTensor([1])
-    mone = one * -1
-
-    if opt.cuda:
-        fixed_model_input = fixed_model_input.cuda()
-        one, mone = one.cuda(), mone.cuda()
-        model_input = model_input.cuda()
 
     gen_iterations = 0
     for epoch in range(opt.nepochs):
@@ -176,34 +167,29 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
 
                 # train with real / healthy data
                 real_cpu = data[0]
+                real_cpu.requires_grad = True
+                real_cpu = real_cpu.to(device)
+
                 net_d.zero_grad()
 
-                if opt.cuda:
-                    real_cpu = real_cpu.cuda()
-                model_input.resize_as_(real_cpu).copy_(real_cpu)
-                inputv = Variable(model_input)
-                err_d_real = net_d(inputv)
+                err_d_real = net_d(real_cpu)
 
                 # train with sum (anomalous + anomaly map)
                 data = anomaly_data_iter.next()
 
                 anomaly_cpu = data[0]
-                net_d.zero_grad()
+                anomaly_cpu.requires_grad = True
+                anomaly_cpu = anomaly_cpu.to(device)
 
-                if opt.cuda:
-                    anomaly_cpu = anomaly_cpu.cuda()
-                model_input.resize_as_(anomaly_cpu).copy_(anomaly_cpu)
-                inputv = Variable(model_input)
-
-                anomaly_map = net_g(inputv)
+                anomaly_map = net_g(anomaly_cpu)
 
                 outputv = anomaly_map
-                img_sum = inputv + outputv
+                img_sum = anomaly_cpu + outputv
 
                 err_d_anomaly_map = net_d(img_sum)
 
                 cri_loss = err_d_real.mean() - err_d_anomaly_map.mean()
-                cri_loss += calc_gradient_penalty(net_d, model_input, img_sum.data)
+                cri_loss += calc_gradient_penalty(net_d, anomaly_cpu, img_sum.data)
 
                 cri_loss.backward()
 
@@ -217,10 +203,10 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                 p.requires_grad = False  # to avoid computation
             net_g.zero_grad()
 
-            anomaly_map = net_g(inputv)
+            anomaly_map = net_g(anomaly_cpu)
 
             # minimize the l1 norm for the anomaly map
-            gen_loss = net_d(inputv + anomaly_map).mean()
+            gen_loss = net_d(anomaly_cpu + anomaly_map).mean()
             err_g = gen_loss
 
             gen_loss += torch.abs(anomaly_map).mean() * LAMBDA_NORM
@@ -231,7 +217,7 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
 
             print('[%d/%d][%d/%d][%d] Loss_D: %f Loss_G: %f Loss_D_real: %f Loss_D_diff %f'
                   % (epoch, opt.nepochs, i, len(healthy_dataloader), gen_iterations,
-                     err_d.data[0], err_g.data[0], err_d_real.data[0], err_d_anomaly_map.data[0]))
+                     err_d.mean(), err_g.item(), err_d_real.mean(), err_d_anomaly_map.mean()))
 
             # print and save
             if gen_iterations % 50 == 0:
@@ -286,7 +272,7 @@ def main():
 
     optim_g, optim_d = init_optimizer(options, net_g=net_g, net_d=net_d)
 
-    if options.cuda:
+    if torch.cuda.is_available() and options.cuda:
         net_g = net_g.cuda()
         net_d = net_d.cuda()
 
