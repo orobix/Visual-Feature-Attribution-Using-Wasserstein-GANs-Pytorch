@@ -38,7 +38,7 @@ def deconv2d_bn_block(in_channels, out_channels, use_upsample=False, kernel=4, s
     if use_upsample:
         up = nn.Sequential(
             nn.Upsample(scale_factor=2),
-            nn.Conv2d(in_channels, out_channels, kernel=1, stride=1, padding=padding)
+            nn.Conv2d(in_channels, out_channels, 3, stride=1, padding=1)
         )
     else:
         up = nn.ConvTranspose2d(in_channels, out_channels, kernel, stride=stride, padding=padding)
