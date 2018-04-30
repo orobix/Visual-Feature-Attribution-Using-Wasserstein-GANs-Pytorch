@@ -29,7 +29,7 @@ def conv2d_bn_block(in_channels, out_channels, momentum=0.01, activation=ACTIVAT
     )
 
 
-def deconv2d_bn_block(in_channels, out_channels, use_upsample=False, kernel=1, stride=1, padding=0, momentum=0.01, activation=ACTIVATION):
+def deconv2d_bn_block(in_channels, out_channels, use_upsample=False, kernel=4, stride=2, padding=0, momentum=0.01, activation=ACTIVATION):
     '''
     returns a block deconv-bn-activation
     NB: use_upsample = True helps to remove chessboard artifacts:
@@ -38,7 +38,7 @@ def deconv2d_bn_block(in_channels, out_channels, use_upsample=False, kernel=1, s
     if use_upsample:
         up = nn.Sequential(
             nn.Upsample(scale_factor=2),
-            nn.Conv2d(in_channels, out_channels, kernel, stride=stride, padding=padding)
+            nn.Conv2d(in_channels, out_channels, kernel=1, stride=1, padding=padding)
         )
     else:
         up = nn.ConvTranspose2d(in_channels, out_channels, kernel, stride=stride, padding=padding)
