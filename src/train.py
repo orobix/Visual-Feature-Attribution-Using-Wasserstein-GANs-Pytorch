@@ -165,7 +165,6 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
 
                 # train with real / healthy data
                 real_cpu = data[0]
-                real_cpu.requires_grad = True
                 real_cpu = real_cpu.to(device)
 
                 net_d.zero_grad()
@@ -176,7 +175,6 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                 data = anomaly_data_iter.next()
 
                 anomaly_cpu = data[0]
-                anomaly_cpu.requires_grad = True
                 anomaly_cpu = anomaly_cpu.to(device)
 
                 anomaly_map = net_g(anomaly_cpu)
