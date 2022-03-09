@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
 
 EFFECT_SIZE = 100
-NUM_SAMPLES = 10000
+NUM_SAMPLES = 10100
 MOVING_EFFECT = True
 RESCALE_TO_ONE = True
 
