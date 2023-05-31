@@ -165,7 +165,6 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
 
                 # train with real / healthy data
                 real_cpu = data[0]
-                real_cpu.requires_grad = True
                 real_cpu = real_cpu.to(device)
 
                 net_d.zero_grad()
@@ -176,7 +175,6 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                 data = anomaly_data_iter.next()
 
                 anomaly_cpu = data[0]
-                anomaly_cpu.requires_grad = True
                 anomaly_cpu = anomaly_cpu.to(device)
 
                 anomaly_map = net_g(anomaly_cpu)
@@ -194,12 +192,23 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
                 err_d = err_d_real - err_d_anomaly_map
                 optim_d.step()
 
+            # If there weren't enough batches in dataloader to complete d_iter updates
+            # --> Exit loop, and don't do generator update
+            if i >= len(anomaly_dataloader):
+                break
+
             ############################
             # (2) Update G network
             ###########################
             for p in net_d.parameters():
                 p.requires_grad = False  # to avoid computation
             net_g.zero_grad()
+
+            data = anomaly_data_iter.next()
+            i += 1
+
+            anomaly_cpu = data[0]
+            anomaly_cpu = anomaly_cpu.to(device)
 
             anomaly_map = net_g(anomaly_cpu)
 
@@ -221,8 +230,8 @@ def train(opt, healthy_dataloader, anomaly_dataloader, net_g, net_d, optim_g, op
             if gen_iterations % 50 == 0:
                 torch.set_grad_enabled(False)
                 anomaly_map = net_g(fixed_model_input)
-                inp = np.vstack(np.hsplit(np.hstack(fixed_model_input[:, 0]), 4))
-                img = np.vstack(np.hsplit(np.hstack(anomaly_map.data[:, 0]), 4))
+                inp = np.vstack(np.hsplit(np.hstack(fixed_model_input.cpu()[:, 0]), 4))
+                img = np.vstack(np.hsplit(np.hstack(anomaly_map.cpu().data[:, 0]), 4))
                 path = '{:}/fake_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
                 plt.imsave(path, -img, cmap='gray')
                 path = '{:}/sum_samples_{:05d}.png'.format(opt.experiment, gen_iterations)
